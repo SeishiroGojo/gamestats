@@ -1,0 +1,55 @@
+[
+  {
+    "eventId": "evt-1",
+    "timestamp": "2026-09-25T10:00:00Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-demo",
+    "type": "MATCH_STARTED",
+    "data": { "track": "Monza", "totalLaps": 2, "players": ["p1", "p2"] }
+  },
+  {
+    "eventId": "evt-2",
+    "timestamp": "2026-09-25T10:00:05Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-demo",
+    "playerId": "p1",
+    "type": "LAP_COMPLETED",
+    "data": { "lapNumber": 1, "lapTimeMs": 91000, "position": 2, "avgSpeedKmh": 190 }
+  },
+  {
+    "eventId": "evt-3",
+    "timestamp": "2026-09-25T10:00:06Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-demo",
+    "playerId": "p1",
+    "type": "POSITION_CHANGED",
+    "data": { "fromPosition": 2, "toPosition": 1, "lapNumber": 1 }
+  },
+  {
+    "eventId": "evt-4",
+    "timestamp": "2026-09-25T10:00:10Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-demo",
+    "playerId": "p2",
+    "type": "LAP_COMPLETED",
+    "data": { "lapNumber": 1, "lapTimeMs": 93000, "position": 2, "avgSpeedKmh": 185 }
+  },
+  {
+    "eventId": "evt-5",
+    "timestamp": "2026-09-25T10:05:00Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-demo",
+    "type": "MATCH_FINISHED",
+    "data": {
+      "finalStandings": [
+        { "playerId": "p1", "finalPosition": 1, "totalTimeMs": 182000 },
+        { "playerId": "p2", "finalPosition": 2, "totalTimeMs": 186000 }
+      ]
+    }
+  }
+]

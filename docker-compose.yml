@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  scala-analysis:
+    build: ./scala-analysis
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  go-ingestion:
+    build: ./go-ingestion
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SCALA_ANALYSIS_URL=http://scala-analysis:8081
+    depends_on:
+      scala-analysis:
+        condition: service_healthy

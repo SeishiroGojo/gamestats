@@ -1,0 +1,12 @@
+# Go
+go-ingestion/bin/
+go-ingestion/*.exe
+
+# Scala / sbt
+scala-analysis/target/
+scala-analysis/project/target/
+scala-analysis/project/project/
+
+# General
+.DS_Store
+*.log
