@@ -4,6 +4,8 @@ COPY . .
 RUN sbt assembly
 
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache tzdata
+ENV TZ=America/Costa_Rica
 WORKDIR /app
 COPY --from=build /app/target/scala-2.13/gamestats-analysis.jar /app/gamestats-analysis.jar
 EXPOSE 8081

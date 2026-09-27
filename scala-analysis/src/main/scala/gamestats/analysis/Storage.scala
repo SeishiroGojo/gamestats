@@ -30,7 +30,7 @@ object Storage {
           """CREATE TABLE IF NOT EXISTS match_results (
             |  match_id     TEXT PRIMARY KEY,
             |  result_json  TEXT NOT NULL,
-            |  created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+            |  created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
             |)""".stripMargin
         )
       } finally stmt.close()
@@ -41,7 +41,7 @@ object Storage {
   def save(matchId: String, resultJson: String): Unit = withConnection { conn =>
     val ps = conn.prepareStatement(
       """INSERT INTO match_results (match_id, result_json, created_at)
-        |VALUES (?, ?, datetime('now'))
+        |VALUES (?, ?, datetime('now','localtime'))
         |ON CONFLICT(match_id) DO UPDATE SET
         |  result_json = excluded.result_json,
         |  created_at  = excluded.created_at
