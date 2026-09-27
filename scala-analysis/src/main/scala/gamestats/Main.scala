@@ -1,7 +1,7 @@
 package gamestats
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
-import gamestats.analysis.{Rules, Statistics}
+import gamestats.analysis.{Rules, Statistics, Storage}
 import gamestats.model.MatchBatch
 import io.circe.generic.semiauto._
 import io.circe.parser.decode
@@ -17,8 +17,10 @@ import scala.util.{Failure, Success, Try}
 /** Módulo de análisis de GameStats.
   *
   * Recibe (POST /analyze) el lote de eventos de una partida terminada,
-  * enviado por el módulo Go, y responde con las estadísticas y reglas
-  * calculadas de forma funcional (ver analysis.Statistics / analysis.Rules).
+  * enviado por el módulo Go, calcula estadísticas y reglas, guarda el
+  * resultado en SQLite, y permite consultarlo después con:
+  *   - GET /results             -> lista de partidas analizadas
+  *   - GET /results/{matchId}   -> resultado completo de una partida
   */
 object Main {
 
@@ -30,13 +32,23 @@ object Main {
     implicit val encoder: Encoder[AnalysisResult] = deriveEncoder
   }
 
-  def main(args: Array[String]): Unit = {
-    val port = sys.env.get("PORT").flatMap(p => Try(p.toInt).toOption).getOrElse(8081)
-    val server = HttpServer.create(new InetSocketAddress(port), 0)
+  final case class ResultSummaryView(matchId: String, createdAt: String)
+  object ResultSummaryView {
+    implicit val encoder: Encoder[ResultSummaryView] = deriveEncoder
+  }
 
+  def main(args: Array[String]): Unit = {
+    val port   = sys.env.get("PORT").flatMap(p => Try(p.toInt).toOption).getOrElse(8081)
+    val dbPath = sys.env.getOrElse("DB_PATH", "data/gamestats.db")
+
+    Storage.init(dbPath)
+    println(s"Base de datos lista en $dbPath")
+
+    val server = HttpServer.create(new InetSocketAddress(port), 0)
     server.createContext("/analyze", analyzeHandler)
+    server.createContext("/results", resultsHandler)
     server.createContext("/health", healthHandler)
-    server.setExecutor(null) // usa un executor por defecto de un solo hilo; suficiente para la demo
+    server.setExecutor(null) // executor por defecto de un solo hilo; suficiente para la demo
     server.start()
     println(s"GameStats analysis escuchando en :$port")
   }
@@ -54,7 +66,43 @@ object Main {
           val stats     = Statistics.matchStats(batch.matchId, batch.events)
           val comebacks = Rules.detectComebacks(batch.events)
           val result    = AnalysisResult(stats, comebacks)
-          respond(exchange, 200, result.asJson.noSpaces)
+          val resultJson = result.asJson.noSpaces
+
+          Try(Storage.save(batch.matchId, resultJson)) match {
+            case Success(_) => ()
+            case Failure(e) => System.err.println(s"error guardando resultado de ${batch.matchId}: ${e.getMessage}")
+          }
+
+          respond(exchange, 200, resultJson)
+      }
+    }
+  }
+
+  /** Maneja tanto GET /results como GET /results/{matchId}, según si el
+    * path trae algo después de "/results/".
+    */
+  private val resultsHandler: HttpHandler = (exchange: HttpExchange) => {
+    if (exchange.getRequestMethod != "GET") {
+      respond(exchange, 405, """{"error":"método no permitido"}""")
+    } else {
+      val path   = exchange.getRequestURI.getPath
+      val prefix = "/results/"
+
+      if (path.startsWith(prefix) && path.length > prefix.length) {
+        val matchId = path.substring(prefix.length)
+        Try(Storage.findByMatchId(matchId)) match {
+          case Success(Some(json)) => respond(exchange, 200, json)
+          case Success(None)       => respond(exchange, 404, s"""{"error":"no hay resultado guardado para $matchId"}""")
+          case Failure(e)          => respond(exchange, 500, s"""{"error":"error consultando: ${e.getMessage}"}""")
+        }
+      } else {
+        Try(Storage.listAll()) match {
+          case Success(summaries) =>
+            val view = summaries.map(s => ResultSummaryView(s.matchId, s.createdAt))
+            respond(exchange, 200, view.asJson.noSpaces)
+          case Failure(e) =>
+            respond(exchange, 500, s"""{"error":"error listando resultados: ${e.getMessage}"}""")
+        }
       }
     }
   }

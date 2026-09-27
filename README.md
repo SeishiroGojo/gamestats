@@ -23,7 +23,10 @@ las estadísticas (ver `docs/event-spec.md` para el detalle completo).
   estadísticas (por jugador, por partida, y una que combina vuelta+posición)
   usando `filter`/`map`/`groupBy`/`fold`, además de una regla de detección
   de **remontada** que exige recorrer la secuencia de eventos de un jugador,
-  no un evento aislado.
+  no un evento aislado. Guarda cada resultado en **SQLite** (archivo
+  persistido en un volumen de Docker) y permite consultarlo después con
+  `GET /results` (lista de partidas analizadas) y
+  `GET /results/{matchId}` (resultado completo de una partida).
 - **Comunicación entre módulos**: HTTP/REST con JSON (decisión documentada
   en `docs/event-spec.md`, sección 7).
 
@@ -122,6 +125,14 @@ curl -X POST http://localhost:8081/analyze \
 - [x] Pipeline de CI básico (`.github/workflows/ci.yml`): build de Go,
       compilación de Scala, y build de las imágenes Docker.
 - [x] Repositorio en Git/GitHub con historial de commits.
+- [x] **Persistencia**: cada resultado de análisis se guarda en SQLite
+      (`scala-analysis/src/main/scala/gamestats/analysis/Storage.scala`),
+      en un archivo dentro de un volumen de Docker (`scala-data`) que
+      sobrevive a `docker compose down`/`up` y a reconstrucciones.
+- [x] **Consulta de resultados**: `GET /results` (lista de partidas
+      analizadas) y `GET /results/{matchId}` (resultado completo).
+      Probado de punta a punta, incluyendo reinicio de contenedores para
+      confirmar que el dato persiste.
 
 ### Cómo repetir la prueba de punta a punta
 
@@ -137,7 +148,15 @@ Invoke-RestMethod -Uri http://localhost:8080/events -Method Post -ContentType "a
 ```
 
 El resultado del análisis aparece en la terminal donde corre
-`docker compose`, como `resultado del análisis para match-demo: ...`.
+`docker compose`, como `resultado del análisis para match-demo: ...`, y
+también queda guardado. Para consultarlo después (aunque hayas cerrado y
+vuelto a levantar los contenedores):
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:8081/results
+Invoke-RestMethod -Uri http://localhost:8081/results/match-demo
+```
+
 El campo `comebacks` queda vacío con este ejemplo porque ningún jugador
 gana las 3+ posiciones que exige el umbral definido en
 `docs/event-spec.md`; para ver una remontada real hace falta correr el
@@ -148,14 +167,10 @@ remontar durante la carrera.
 
 - [ ] Correr el simulador con varias partidas en paralelo y confirmar que
       se detecta al menos una remontada real (`comebacks` no vacío).
-- [ ] Persistencia de resultados: hoy `scala-analysis` responde al vuelo y
-      no guarda histórico; falta decidir dónde y cómo almacenar los
-      resultados.
-- [ ] Endpoint para **consultar** resultados ya calculados (entregable
-      "permitir consultar o presentar los resultados", sección 9).
 - [ ] Ampliar o ajustar estadísticas/reglas si el equipo lo considera
       necesario, y documentar cualquier cambio en `docs/event-spec.md`.
 - [ ] Pruebas automatizadas (unit tests) en Go y en Scala.
 - [ ] Deployment de una versión funcional en un entorno definido por el
       equipo (sección 10 del enunciado), y documentarlo.
-- [ ] Preparar la demostración funcional del sistema para la entrega.
+- [ ] Preparar la demostración funcional del sistema para la entrega
+      (28 de octubre de 2026).
