@@ -175,10 +175,11 @@ sbt test
 
 ## Pendientes
 
-- [ ] Correr el simulador con varias partidas en paralelo y confirmar que
-      se detecta al menos una remontada real (`comebacks` no vacío).
-- [ ] Ampliar o ajustar estadísticas/reglas si el equipo lo considera
-      necesario, y documentar cualquier cambio en `docs/event-spec.md`.
+- [x] **Simulador verificado**: se corrió `cmd/simulator` con 3 partidas
+      en paralelo y se detectó una remontada real por partida
+      (`comebacks` no vacío).
+- [x] **Estadísticas ampliadas**: pit stops (cantidad y tiempo total) e
+      incidentes por jugador, documentadas en `docs/event-spec.md`.
 - [x] **Pruebas automatizadas**: unit tests en Go (`validate` y `match`,
       este último con un Scala simulado vía `httptest`) y en Scala
       (`Statistics` y `Rules`, con munit). Se ejecutan también en el CI.

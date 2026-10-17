@@ -67,6 +67,8 @@ Todo evento que entra al sistema por el módulo Go tiene esta forma:
 - Tiempo promedio de vuelta (`avgLapTimeMs`).
 - Total de penalizaciones y tiempo penalizado.
 - Posición final.
+- Cantidad de pit stops y tiempo total en pits (`pitStopCount`, `totalPitMs`).
+- Cantidad de incidentes de carrera (`incidentCount`).
 
 **Por partida** (agregada):
 - Vuelta más rápida de la carrera (entre todos los jugadores).

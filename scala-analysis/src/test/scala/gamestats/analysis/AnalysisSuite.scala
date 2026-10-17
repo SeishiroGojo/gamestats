@@ -59,6 +59,22 @@ class AnalysisSuite extends munit.FunSuite {
         Json.obj("playerId" -> Json.fromString(p), "finalPosition" -> Json.fromInt(pos))
       }: _*)
     )
+  
+  private def pitStop(player: String, durationMs: Long, lapNumber: Int): Event =
+    event(
+      EventTypes.PitStop,
+      Some(player),
+      "durationMs" -> Json.fromLong(durationMs),
+      "lapNumber"  -> Json.fromInt(lapNumber)
+    )
+
+  private def incident(player: String): Event =
+    event(
+      EventTypes.RaceIncident,
+      Some(player),
+      "incidentType" -> Json.fromString("choque"),
+      "severity"     -> Json.fromInt(2)
+    )
 
   // --- Statistics ---
 
@@ -133,6 +149,24 @@ class AnalysisSuite extends munit.FunSuite {
     )
     val evolution = Statistics.positionEvolution(events)
     assertEquals(evolution("p1"), List((1, 4), (2, 3), (3, 2)))
+  }
+
+  test("playerStats cuenta pit stops, tiempo en pits e incidentes") {
+    val events = List(
+      pitStop("p1", 2500L, 2),
+      pitStop("p1", 3000L, 4),
+      incident("p1"),
+      lap("p2", 1, 95000L, 1)
+    )
+    val stats = Statistics.playerStats(events)
+    val p1    = stats.find(_.playerId == "p1").get
+    val p2    = stats.find(_.playerId == "p2").get
+
+    assertEquals(p1.pitStopCount, 2)
+    assertEquals(p1.totalPitMs, 5500L)
+    assertEquals(p1.incidentCount, 1)
+    assertEquals(p2.pitStopCount, 0)
+    assertEquals(p2.incidentCount, 0)
   }
 
   // --- Rules (remontada) ---

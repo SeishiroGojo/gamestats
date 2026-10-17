@@ -16,7 +16,10 @@ object Statistics {
       avgLapMs: Option[Double],
       totalPenaltyMs: Long,
       penaltyCount: Int,
-      finalPosition: Option[Int]
+      finalPosition: Option[Int],
+      pitStopCount: Int,
+      totalPitMs: Long,
+      incidentCount: Int
   )
   object PlayerStats {
     implicit val encoder: Encoder[PlayerStats] = deriveEncoder
@@ -63,9 +66,11 @@ object Statistics {
   def playerStats(events: List[Event]): List[PlayerStats] = {
     val laps      = lapEvents(events).groupBy(_.playerId.getOrElse("unknown"))
     val penalties = events.filter(_.`type` == EventTypes.PenaltyApplied).groupBy(_.playerId.getOrElse("unknown"))
+    val pitStops  = events.filter(_.`type` == EventTypes.PitStop).groupBy(_.playerId.getOrElse("unknown"))
+    val incidents = events.filter(_.`type` == EventTypes.RaceIncident).groupBy(_.playerId.getOrElse("unknown"))
     val finals    = finalStandings(events)
 
-    val playerIds = (laps.keySet ++ penalties.keySet).toList.sorted
+    val playerIds = (laps.keySet ++ penalties.keySet ++ pitStops.keySet ++ incidents.keySet).toList.sorted
 
     playerIds.map { playerId =>
       val times = laps.getOrElse(playerId, Nil).flatMap(lapTimeMs)
@@ -81,7 +86,18 @@ object Statistics {
         .flatMap(_.data.get("timeMs").flatMap(_.asNumber).flatMap(_.toLong))
         .foldLeft(0L)(_ + _)
 
-      PlayerStats(playerId, best, avg, penTotal, penEvents.size, finals.get(playerId))
+      // fold: cantidad y tiempo total en pits.
+      val pitEvents = pitStops.getOrElse(playerId, Nil)
+      val pitTotal = pitEvents
+        .flatMap(_.data.get("durationMs").flatMap(_.asNumber).flatMap(_.toLong))
+        .foldLeft(0L)(_ + _)
+
+      val incidentCount = incidents.getOrElse(playerId, Nil).size
+
+      PlayerStats(
+        playerId, best, avg, penTotal, penEvents.size, finals.get(playerId),
+        pitEvents.size, pitTotal, incidentCount
+      )
     }
   }
 
