@@ -50,23 +50,48 @@ func TestValidate(t *testing.T) {
 			wantError: true,
 		},
 
-		// TODO 1: agregar un caso donde falte matchId (e.MatchID = "")
-		// y wantError sea true.
-
-		// TODO 2: agregar un caso donde falte type (e.Type = "")
-		// y wantError sea true.
-
-		// TODO 3: agregar un caso de tipo LAP_COMPLETED (e.Type =
-		// model.TypeLapCompleted) SIN playerId (e.PlayerID = "") y
-		// wantError true. Pista: mirar el mapa playerRequired en
-		// validator.go para entender por qué.
-
-		// TODO 4: agregar el mismo caso que el anterior pero CON
-		// playerId (e.PlayerID = "player-1") y wantError false, para
-		// demostrar que con playerId sí pasa.
-
-		// TODO 5 (opcional, si te queda tiempo): agregar un caso con
-		// e.Timestamp = time.Time{} (fecha "vacía") y wantError true.
+		{
+			name: "falta matchId debe fallar",
+			modify: func(e model.Event) model.Event {
+				e.MatchID = ""
+				return e
+			},
+			wantError: true,
+		},
+		{
+			name: "falta type debe fallar",
+			modify: func(e model.Event) model.Event {
+				e.Type = ""
+				return e
+			},
+			wantError: true,
+		},
+		{
+			name: "LAP_COMPLETED sin playerId debe fallar",
+			modify: func(e model.Event) model.Event {
+				e.Type = model.TypeLapCompleted
+				e.PlayerID = ""
+				return e
+			},
+			wantError: true,
+		},
+		{
+			name: "LAP_COMPLETED con playerId pasa sin error",
+			modify: func(e model.Event) model.Event {
+				e.Type = model.TypeLapCompleted
+				e.PlayerID = "player-1"
+				return e
+			},
+			wantError: false,
+		},
+		{
+			name: "timestamp vacío debe fallar",
+			modify: func(e model.Event) model.Event {
+				e.Timestamp = time.Time{}
+				return e
+			},
+			wantError: true,
+		},
 	}
 
 	for _, tc := range cases {

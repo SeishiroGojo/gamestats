@@ -163,13 +163,25 @@ gana las 3+ posiciones que exige el umbral definido en
 simulador (`cmd/simulator`), que fuerza a un jugador a arrancar último y
 remontar durante la carrera.
 
+### Correr las pruebas automatizadas
+
+```powershell
+cd go-ingestion
+go test ./...
+
+cd ../scala-analysis
+sbt test
+```
+
 ## Pendientes
 
 - [ ] Correr el simulador con varias partidas en paralelo y confirmar que
       se detecta al menos una remontada real (`comebacks` no vacío).
 - [ ] Ampliar o ajustar estadísticas/reglas si el equipo lo considera
       necesario, y documentar cualquier cambio en `docs/event-spec.md`.
-- [ ] Pruebas automatizadas (unit tests) en Go y en Scala.
+- [x] **Pruebas automatizadas**: unit tests en Go (`validate` y `match`,
+      este último con un Scala simulado vía `httptest`) y en Scala
+      (`Statistics` y `Rules`, con munit). Se ejecutan también en el CI.
 - [ ] Deployment de una versión funcional en un entorno definido por el
       equipo (sección 10 del enunciado), y documentarlo.
 - [ ] Preparar la demostración funcional del sistema para la entrega

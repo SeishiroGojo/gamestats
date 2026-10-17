@@ -8,11 +8,13 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-core"    % "0.14.9",
       "io.circe" %% "circe-generic" % "0.14.9",
       "io.circe" %% "circe-parser"  % "0.14.9",
-      "org.xerial" % "sqlite-jdbc" % "3.49.1.0"
+      "org.xerial" % "sqlite-jdbc" % "3.49.1.0",
+      "org.scalameta" %% "munit" % "1.0.0" % Test
     ),
     Compile / mainClass := Some("gamestats.Main"),
     assembly / mainClass := Some("gamestats.Main"),
     assembly / assemblyJarName := "gamestats-analysis.jar",
+    assembly / test := {},
     assembly / assemblyMergeStrategy := {
       case PathList("META-INF", xs @ _*) => MergeStrategy.discard
       case _                             => MergeStrategy.first

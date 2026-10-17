@@ -21,6 +21,9 @@ jobs:
       - name: go build
         working-directory: go-ingestion
         run: go build ./...
+      - name: go test
+        working-directory: go-ingestion
+        run: go test ./...
 
   build-scala:
     name: Build & test Scala
@@ -35,6 +38,9 @@ jobs:
       - name: sbt compile
         working-directory: scala-analysis
         run: sbt compile
+      - name: sbt test
+        working-directory: scala-analysis
+        run: sbt test
 
   docker-images:
     name: Build imágenes Docker
