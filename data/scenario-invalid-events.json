@@ -1,0 +1,80 @@
+[
+  {
+    "timestamp": "2026-10-01T15:00:00Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-invalid",
+    "playerId": "p1",
+    "type": "LAP_COMPLETED",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 90000,
+      "position": 1
+    }
+  },
+  {
+    "eventId": "bad-002",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-invalid",
+    "playerId": "p1",
+    "type": "LAP_COMPLETED",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 90000,
+      "position": 1
+    }
+  },
+  {
+    "eventId": "bad-003",
+    "timestamp": "2026-10-01T15:00:00Z",
+    "gameVersion": "1.0",
+    "matchId": "match-invalid",
+    "playerId": "p1",
+    "type": "LAP_COMPLETED",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 90000,
+      "position": 1
+    }
+  },
+  {
+    "eventId": "bad-004",
+    "timestamp": "2026-10-01T15:00:00Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "playerId": "p1",
+    "type": "LAP_COMPLETED",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 90000,
+      "position": 1
+    }
+  },
+  {
+    "eventId": "bad-005",
+    "timestamp": "2026-10-01T15:00:00Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-invalid",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 90000,
+      "position": 1
+    }
+  },
+  {
+    "eventId": "bad-006",
+    "timestamp": "2026-10-01T15:00:00Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-invalid",
+    "type": "LAP_COMPLETED",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 90000,
+      "position": 1
+    }
+  }
+]

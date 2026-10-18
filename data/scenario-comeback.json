@@ -1,0 +1,365 @@
+[
+  {
+    "eventId": "cb-001",
+    "timestamp": "2026-10-01T15:00:02Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "MATCH_STARTED",
+    "data": {
+      "track": "Interlagos",
+      "totalLaps": 3,
+      "players": [
+        "p1",
+        "p2",
+        "p3",
+        "p4"
+      ]
+    }
+  },
+  {
+    "eventId": "cb-002",
+    "timestamp": "2026-10-01T15:00:04Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "PLAYER_JOINED",
+    "playerId": "p1",
+    "data": {
+      "playerName": "P1",
+      "carId": "car-p1"
+    }
+  },
+  {
+    "eventId": "cb-003",
+    "timestamp": "2026-10-01T15:00:06Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "PLAYER_JOINED",
+    "playerId": "p2",
+    "data": {
+      "playerName": "P2",
+      "carId": "car-p2"
+    }
+  },
+  {
+    "eventId": "cb-004",
+    "timestamp": "2026-10-01T15:00:08Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "PLAYER_JOINED",
+    "playerId": "p3",
+    "data": {
+      "playerName": "P3",
+      "carId": "car-p3"
+    }
+  },
+  {
+    "eventId": "cb-005",
+    "timestamp": "2026-10-01T15:00:10Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "PLAYER_JOINED",
+    "playerId": "p4",
+    "data": {
+      "playerName": "P4",
+      "carId": "car-p4"
+    }
+  },
+  {
+    "eventId": "cb-006",
+    "timestamp": "2026-10-01T15:00:12Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 91500,
+      "position": 1,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-007",
+    "timestamp": "2026-10-01T15:00:14Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p2",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 92000,
+      "position": 2,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-008",
+    "timestamp": "2026-10-01T15:00:16Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p3",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 93000,
+      "position": 3,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-009",
+    "timestamp": "2026-10-01T15:00:18Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p4",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 94000,
+      "position": 4,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-010",
+    "timestamp": "2026-10-01T15:00:20Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "PENALTY_APPLIED",
+    "playerId": "p2",
+    "data": {
+      "reason": "corte de pista",
+      "timeMs": 5000
+    }
+  },
+  {
+    "eventId": "cb-011",
+    "timestamp": "2026-10-01T15:00:22Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "PIT_STOP",
+    "playerId": "p4",
+    "data": {
+      "durationMs": 2400,
+      "lapNumber": 1
+    }
+  },
+  {
+    "eventId": "cb-012",
+    "timestamp": "2026-10-01T15:00:24Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 91800,
+      "position": 2,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-013",
+    "timestamp": "2026-10-01T15:00:26Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p2",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 92200,
+      "position": 3,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-014",
+    "timestamp": "2026-10-01T15:00:28Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p3",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 92900,
+      "position": 4,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-015",
+    "timestamp": "2026-10-01T15:00:30Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p4",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 90100,
+      "position": 1,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-016",
+    "timestamp": "2026-10-01T15:00:32Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "POSITION_CHANGED",
+    "playerId": "p4",
+    "data": {
+      "fromPosition": 4,
+      "toPosition": 3,
+      "lapNumber": 2
+    }
+  },
+  {
+    "eventId": "cb-017",
+    "timestamp": "2026-10-01T15:00:34Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "POSITION_CHANGED",
+    "playerId": "p4",
+    "data": {
+      "fromPosition": 3,
+      "toPosition": 2,
+      "lapNumber": 2
+    }
+  },
+  {
+    "eventId": "cb-018",
+    "timestamp": "2026-10-01T15:00:36Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "POSITION_CHANGED",
+    "playerId": "p4",
+    "data": {
+      "fromPosition": 2,
+      "toPosition": 1,
+      "lapNumber": 2
+    }
+  },
+  {
+    "eventId": "cb-019",
+    "timestamp": "2026-10-01T15:00:38Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "RACE_INCIDENT",
+    "playerId": "p3",
+    "data": {
+      "incidentType": "salida de pista",
+      "severity": 2
+    }
+  },
+  {
+    "eventId": "cb-020",
+    "timestamp": "2026-10-01T15:00:40Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 3,
+      "lapTimeMs": 92000,
+      "position": 2,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-021",
+    "timestamp": "2026-10-01T15:00:42Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p2",
+    "data": {
+      "lapNumber": 3,
+      "lapTimeMs": 92500,
+      "position": 3,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-022",
+    "timestamp": "2026-10-01T15:00:44Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p3",
+    "data": {
+      "lapNumber": 3,
+      "lapTimeMs": 93100,
+      "position": 4,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-023",
+    "timestamp": "2026-10-01T15:00:46Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "LAP_COMPLETED",
+    "playerId": "p4",
+    "data": {
+      "lapNumber": 3,
+      "lapTimeMs": 89800,
+      "position": 1,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "cb-024",
+    "timestamp": "2026-10-01T15:00:48Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-comeback",
+    "type": "MATCH_FINISHED",
+    "data": {
+      "finalStandings": [
+        {
+          "playerId": "p4",
+          "finalPosition": 1,
+          "totalTimeMs": 274000
+        },
+        {
+          "playerId": "p1",
+          "finalPosition": 2,
+          "totalTimeMs": 275300
+        },
+        {
+          "playerId": "p2",
+          "finalPosition": 3,
+          "totalTimeMs": 281700
+        },
+        {
+          "playerId": "p3",
+          "finalPosition": 4,
+          "totalTimeMs": 279000
+        }
+      ]
+    }
+  }
+]

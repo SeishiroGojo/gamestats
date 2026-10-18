@@ -1,0 +1,212 @@
+[
+  {
+    "eventId": "dc-001",
+    "timestamp": "2026-10-01T15:00:02Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "MATCH_STARTED",
+    "data": {
+      "track": "Suzuka",
+      "totalLaps": 3,
+      "players": [
+        "p1",
+        "p2",
+        "p3"
+      ]
+    }
+  },
+  {
+    "eventId": "dc-002",
+    "timestamp": "2026-10-01T15:00:04Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "PLAYER_JOINED",
+    "playerId": "p1",
+    "data": {
+      "playerName": "P1",
+      "carId": "car-p1"
+    }
+  },
+  {
+    "eventId": "dc-003",
+    "timestamp": "2026-10-01T15:00:06Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "PLAYER_JOINED",
+    "playerId": "p2",
+    "data": {
+      "playerName": "P2",
+      "carId": "car-p2"
+    }
+  },
+  {
+    "eventId": "dc-004",
+    "timestamp": "2026-10-01T15:00:08Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "PLAYER_JOINED",
+    "playerId": "p3",
+    "data": {
+      "playerName": "P3",
+      "carId": "car-p3"
+    }
+  },
+  {
+    "eventId": "dc-005",
+    "timestamp": "2026-10-01T15:00:10Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 92100,
+      "position": 1,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-006",
+    "timestamp": "2026-10-01T15:00:12Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p2",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 93100,
+      "position": 2,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-007",
+    "timestamp": "2026-10-01T15:00:14Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p3",
+    "data": {
+      "lapNumber": 1,
+      "lapTimeMs": 94100,
+      "position": 3,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-008",
+    "timestamp": "2026-10-01T15:00:16Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 92200,
+      "position": 1,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-009",
+    "timestamp": "2026-10-01T15:00:18Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p2",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 93200,
+      "position": 2,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-010",
+    "timestamp": "2026-10-01T15:00:20Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p3",
+    "data": {
+      "lapNumber": 2,
+      "lapTimeMs": 94200,
+      "position": 3,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-011",
+    "timestamp": "2026-10-01T15:00:22Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "PLAYER_DISCONNECTED",
+    "playerId": "p3",
+    "data": {
+      "reason": "perdida de conexion"
+    }
+  },
+  {
+    "eventId": "dc-012",
+    "timestamp": "2026-10-01T15:00:24Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p1",
+    "data": {
+      "lapNumber": 3,
+      "lapTimeMs": 92300,
+      "position": 1,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-013",
+    "timestamp": "2026-10-01T15:00:26Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "LAP_COMPLETED",
+    "playerId": "p2",
+    "data": {
+      "lapNumber": 3,
+      "lapTimeMs": 93300,
+      "position": 2,
+      "avgSpeedKmh": 200
+    }
+  },
+  {
+    "eventId": "dc-014",
+    "timestamp": "2026-10-01T15:00:28Z",
+    "gameId": "racing-circuit",
+    "gameVersion": "1.0",
+    "matchId": "match-disconnect",
+    "type": "MATCH_FINISHED",
+    "data": {
+      "finalStandings": [
+        {
+          "playerId": "p1",
+          "finalPosition": 1,
+          "totalTimeMs": 276300
+        },
+        {
+          "playerId": "p2",
+          "finalPosition": 2,
+          "totalTimeMs": 279300
+        }
+      ]
+    }
+  }
+]
