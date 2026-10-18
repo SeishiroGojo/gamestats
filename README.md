@@ -1,5 +1,7 @@
 # GameStats
 
+![CI](https://github.com/SeishiroGojo/gamestats/actions/workflows/ci.yml/badge.svg)
+
 Plataforma para procesar y analizar eventos de partidas de videojuegos.
 Este equipo eligió **carreras** como juego base para diseñar los eventos y
 las estadísticas (ver `docs/event-spec.md` para el detalle completo).
@@ -34,17 +36,33 @@ las estadísticas (ver `docs/event-spec.md` para el detalle completo).
 
 ```
 gamestats/
-├── docs/event-spec.md          # especificación de eventos y estadísticas
-├── go-ingestion/                # módulo Go
-│   ├── cmd/server/               # servidor de ingestión
-│   ├── cmd/simulator/            # fuente externa simulada de eventos
+├── docs/                         # documentación (ver índice abajo)
+├── go-ingestion/                 # módulo Go
+│   ├── cmd/server/                # servidor de ingestión
+│   ├── cmd/simulator/             # fuente externa simulada de eventos
+│   ├── cmd/smoketest/             # prueba de humo de punta a punta
 │   └── internal/{model,validate,match,client}
-├── scala-analysis/              # módulo Scala
-│   └── src/main/scala/gamestats/{model,analysis,Main.scala}
-├── data/sample-events.json      # ejemplo de eventos para pruebas manuales
-├── docker-compose.yml           # levanta ambos módulos integrados
-└── .github/workflows/ci.yml     # pipeline de CI (build Go + Scala + imágenes)
+├── scala-analysis/               # módulo Scala
+│   └── src/{main,test}/scala/gamestats/{model,analysis,Main.scala}
+├── data/                         # escenarios de prueba (válidos, remontada, desconexión, inválidos)
+├── docker-compose.yml            # desarrollo: construye las imágenes desde el código
+├── docker-compose.deploy.yml     # despliegue: usa las imágenes publicadas en GHCR
+└── .github/workflows/ci.yml      # CI/CD: tests, integración, publicación y despliegue
 ```
+
+### Documentación
+
+| Documento | Contenido |
+|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | arquitectura, concurrencia, decisiones y comparación imperativo (Go) vs funcional (Scala) |
+| [`docs/game-design.md`](docs/game-design.md) | juego elegido, justificación de los eventos y cómo extender a otros juegos |
+| [`docs/event-spec.md`](docs/event-spec.md) | especificación del formato de eventos y del intercambio Go → Scala |
+| [`docs/statistics-and-rules.md`](docs/statistics-and-rules.md) | estadísticas y regla de remontada, con escenarios de prueba |
+| [`docs/api.md`](docs/api.md) | referencia de los endpoints de ambos módulos |
+| [`docs/installation.md`](docs/installation.md) | instalación, ejecución y solución de problemas |
+| [`docs/ci-cd.md`](docs/ci-cd.md) | pipeline de CI/CD |
+| [`docs/deployment.md`](docs/deployment.md) | despliegue con las imágenes publicadas |
+| [`docs/demo-guide.md`](docs/demo-guide.md) | guion de la demostración |
 
 ## Cómo correrlo
 
@@ -122,8 +140,10 @@ curl -X POST http://localhost:8081/analyze \
       prueba" abajo.
 - [x] Simulador (`cmd/simulator`) que genera partidas de carreras con
       varios jugadores y vueltas en paralelo.
-- [x] Pipeline de CI básico (`.github/workflows/ci.yml`): build de Go,
-      compilación de Scala, y build de las imágenes Docker.
+- [x] Pipeline de CI/CD (`.github/workflows/ci.yml`): formato, `vet` y tests
+      de Go con detector de carreras, compilación y tests de Scala, prueba de
+      integración con Docker Compose, y publicación de las imágenes en GitHub
+      Container Registry (más despliegue opcional por SSH). Ver `docs/ci-cd.md`.
 - [x] Repositorio en Git/GitHub con historial de commits.
 - [x] **Persistencia**: cada resultado de análisis se guarda en SQLite
       (`scala-analysis/src/main/scala/gamestats/analysis/Storage.scala`),
@@ -167,23 +187,52 @@ remontar durante la carrera.
 
 ```powershell
 cd go-ingestion
-go test ./...
+go test -race ./...
 
 cd ../scala-analysis
 sbt test
 ```
 
-## Pendientes
+### Prueba de humo de punta a punta
 
-- [x] **Simulador verificado**: se corrió `cmd/simulator` con 3 partidas
-      en paralelo y se detectó una remontada real por partida
-      (`comebacks` no vacío).
-- [x] **Estadísticas ampliadas**: pit stops (cantidad y tiempo total) e
-      incidentes por jugador, documentadas en `docs/event-spec.md`.
-- [x] **Pruebas automatizadas**: unit tests en Go (`validate` y `match`,
-      este último con un Scala simulado vía `httptest`) y en Scala
-      (`Statistics` y `Rules`, con munit). Se ejecutan también en el CI.
-- [ ] Deployment de una versión funcional en un entorno definido por el
-      equipo (sección 10 del enunciado), y documentarlo.
-- [ ] Preparar la demostración funcional del sistema para la entrega
-      (28 de octubre de 2026).
+Con los servicios levantados (`docker compose up --build`), envía todos los
+escenarios de `data/` y verifica los resultados (termina en
+`RESULTADO: todo correcto`):
+
+```powershell
+cd go-ingestion
+go run ./cmd/smoketest -data ../data
+```
+
+### Desplegar las imágenes publicadas
+
+Las imágenes `gamestats-ingestion` y `gamestats-analysis` se publican en GHCR
+en cada `push` a `main` (y en cada etiqueta `vX.Y.Z`). Para ejecutarlas sin
+compilar nada, ver [`docs/deployment.md`](docs/deployment.md):
+
+```powershell
+docker compose -f docker-compose.deploy.yml pull
+docker compose -f docker-compose.deploy.yml up -d
+```
+
+## Cumplimiento del enunciado
+
+| Requisito | Dónde se cumple |
+|---|---|
+| Go: ingestión, validación, flujo, estado por partida y concurrencia | `go-ingestion/` (una goroutine y un channel por partida) |
+| Scala: colecciones funcionales, estadísticas y reglas | `scala-analysis/` (`Statistics`, `Rules`); `docs/statistics-and-rules.md` |
+| Estadística por jugador, por partida y combinando eventos | `playerStats` (combina vueltas, penalizaciones, pits, incidentes y clasificación final) y `matchStats` |
+| Regla basada en una secuencia de eventos | remontada (`Rules.detectComebacks`) |
+| Resultados estructurados y consultables | JSON en SQLite; `GET /results` y `GET /results/{matchId}` |
+| Fuente de eventos simulada | `cmd/simulator` y escenarios en `data/` |
+| Formato de eventos documentado y justificación del diseño | `docs/event-spec.md`, `docs/game-design.md` |
+| Git, Docker, CI/CD y despliegue | historial de commits, Dockerfiles, `docker-compose*.yml`, `ci.yml`, `docs/deployment.md` |
+| Instalación, ejecución y demostración | `docs/installation.md`, `docs/demo-guide.md` |
+| Imperativo vs funcional | `docs/architecture.md`, sección 6 |
+
+Las limitaciones conocidas y el trabajo futuro están en
+`docs/architecture.md`, sección 7.
+
+## Entrega
+
+Domingo **18 de octubre de 2026**, antes de las 10:00 pm, por el Tec Digital.
