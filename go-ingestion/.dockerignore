@@ -1,0 +1,4 @@
+# Lo que NO hace falta enviar al build de Docker
+bin/
+*.exe
+*.log

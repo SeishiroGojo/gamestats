@@ -1,0 +1,8 @@
+# Lo que NO hace falta enviar al build de Docker (se regenera dentro de la imagen)
+target/
+project/target/
+project/project/
+.bloop/
+.metals/
+.bsp/
+*.log

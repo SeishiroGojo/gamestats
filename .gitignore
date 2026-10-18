@@ -7,6 +7,14 @@ scala-analysis/target/
 scala-analysis/project/target/
 scala-analysis/project/project/
 
+# Herramientas del editor (caché local de Metals y Bloop)
+.metals/
+.bloop/
+.bsp/
+
+# Base de datos local al correr Scala sin Docker (en Docker vive en un volumen)
+scala-analysis/data/
+
 # General
 .DS_Store
 *.log
