@@ -1,0 +1,50 @@
+# Despliegue de GameStats con las imágenes ya construidas y publicadas por el
+# pipeline de CI en GitHub Container Registry (GHCR). No compila nada: solo
+# descarga las imágenes y las ejecuta. Guía completa: docs/deployment.md
+#
+#   docker compose -f docker-compose.deploy.yml pull
+#   docker compose -f docker-compose.deploy.yml up -d
+#
+# Variables opcionales (archivo .env junto a este archivo o variables de entorno):
+#   GHCR_OWNER      usuario/organización dueño de las imágenes (en minúsculas)
+#   GAMESTATS_TAG   versión de las imágenes: latest (por defecto), v1.0.0 o un sha-...
+#   ANALYSIS_BIND   interfaz donde se publica el puerto 8081 (127.0.0.1 por defecto;
+#                   usar 0.0.0.0 si se quiere consultar resultados desde otra máquina)
+name: gamestats
+
+services:
+  scala-analysis:
+    image: ghcr.io/${GHCR_OWNER:-seishirogojo}/gamestats-analysis:${GAMESTATS_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${ANALYSIS_BIND:-127.0.0.1}:8081:8081"
+    environment:
+      - PORT=8081
+      - DB_PATH=/app/data/gamestats.db
+    volumes:
+      - scala-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  go-ingestion:
+    image: ghcr.io/${GHCR_OWNER:-seishirogojo}/gamestats-ingestion:${GAMESTATS_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SCALA_ANALYSIS_URL=http://scala-analysis:8081
+    depends_on:
+      scala-analysis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  scala-data:

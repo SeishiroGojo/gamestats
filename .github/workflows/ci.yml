@@ -1,29 +1,54 @@
 name: GameStats CI
 
+# Pipeline completo: compilar y probar cada módulo, probar el sistema integrado
+# con Docker Compose, publicar las imágenes en GHCR y (opcional) desplegar.
+# Documentación: docs/ci-cd.md y docs/deployment.md
+
 on:
   push:
     branches: ["main"]
+    tags: ["v*"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # En pull requests se cancela la ejecución anterior; en main/etiquetas nunca,
+  # para no dejar una publicación a medias.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   build-go:
-    name: Build & vet Go
+    name: Build & test Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache-dependency-path: go-ingestion/go.mod
+      - name: gofmt (formato)
+        working-directory: go-ingestion
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Archivos sin formato (ejecutar 'gofmt -w .'):"
+            echo "$unformatted"
+            exit 1
+          fi
       - name: go vet
         working-directory: go-ingestion
         run: go vet ./...
       - name: go build
         working-directory: go-ingestion
         run: go build ./...
-      - name: go test
+      - name: go test (con detector de carreras)
         working-directory: go-ingestion
-        run: go test ./...
+        run: go test -race -count=1 ./...
 
   build-scala:
     name: Build & test Scala
@@ -34,23 +59,133 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: sbt
       - uses: sbt/setup-sbt@v1
-      - name: sbt compile
+      - name: sbt compile y test
         working-directory: scala-analysis
-        run: sbt compile
-      - name: sbt test
-        working-directory: scala-analysis
-        run: sbt test
+        run: sbt -batch compile test
 
-  docker-images:
-    name: Build imágenes Docker
+  e2e:
+    name: Integración (Docker Compose + prueba de humo)
     runs-on: ubuntu-latest
     needs: [build-go, build-scala]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Build imagen Go
-        run: docker build -t gamestats-ingestion:${{ github.sha }} ./go-ingestion
-      - name: Build imagen Scala
-        run: docker build -t gamestats-analysis:${{ github.sha }} ./scala-analysis
-      # Push/deploy: agregar aquí el paso hacia el registro y entorno
-      # de despliegue elegido por el equipo (sección 10 del enunciado).
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: go-ingestion/go.mod
+      - name: Construir y levantar los servicios
+        run: docker compose up -d --build --wait --wait-timeout 300
+      - name: Estado de los contenedores
+        run: docker compose ps
+      - name: Prueba de humo de punta a punta
+        working-directory: go-ingestion
+        run: go run ./cmd/smoketest -data ../data
+      - name: Logs de los servicios (solo si falló)
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Limpiar (contenedores y volumen)
+        if: always()
+        run: docker compose down -v
+
+  publish:
+    name: Publicar imagen ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: e2e
+    # Nunca en pull requests, y solo después de que e2e pasó.
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ingestion
+            context: go-ingestion
+            image: gamestats-ingestion
+          - name: analysis
+            context: scala-analysis
+            image: gamestats-analysis
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dueño de las imágenes en minúsculas (GHCR lo exige)
+        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+      - uses: docker/setup-buildx-action@v3
+      - name: Iniciar sesión en GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Etiquetas de la imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.OWNER_LC }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=sha,format=short,prefix=sha-
+      - name: Construir y publicar
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.context }}
+          push: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+      - name: Resumen
+        env:
+          IMAGE: ${{ matrix.image }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "### Imagen publicada: $IMAGE"
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Despliegue por SSH (opcional)
+    runs-on: ubuntu-latest
+    needs: publish
+    # Desactivado por defecto: requiere la variable DEPLOY_ENABLED=true y los
+    # secretos descritos en docs/deployment.md, sección 4.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    environment: production
+    concurrency: deploy-production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar SSH
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+      - name: Copiar el compose y actualizar los contenedores
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          SSH="ssh -i $HOME/.ssh/id_deploy $DEPLOY_USER@$DEPLOY_HOST"
+          $SSH "mkdir -p '$DEPLOY_PATH'"
+          scp -i "$HOME/.ssh/id_deploy" docker-compose.deploy.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/docker-compose.deploy.yml"
+          $SSH "cd '$DEPLOY_PATH' && (grep -q '^GHCR_OWNER=' .env 2>/dev/null || echo 'GHCR_OWNER=$OWNER_LC' >> .env) && docker compose -f docker-compose.deploy.yml pull && docker compose -f docker-compose.deploy.yml up -d"
+      - name: Esperar a que el servicio responda
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i "$HOME/.ssh/id_deploy" "$DEPLOY_USER@$DEPLOY_HOST" \
+            'for i in $(seq 1 30); do (curl -fsS http://localhost:8080/health || wget -qO- http://localhost:8080/health) && exit 0; sleep 2; done; exit 1'
