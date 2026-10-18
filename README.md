@@ -62,7 +62,7 @@ gamestats/
 | [`docs/installation.md`](docs/installation.md) | instalación, ejecución y solución de problemas |
 | [`docs/ci-cd.md`](docs/ci-cd.md) | pipeline de CI/CD |
 | [`docs/deployment.md`](docs/deployment.md) | despliegue con las imágenes publicadas |
-| [`docs/demo-guide.md`](docs/demo-guide.md) | guion de la demostración |
+
 
 ## Cómo correrlo
 
@@ -227,7 +227,7 @@ docker compose -f docker-compose.deploy.yml up -d
 | Fuente de eventos simulada | `cmd/simulator` y escenarios en `data/` |
 | Formato de eventos documentado y justificación del diseño | `docs/event-spec.md`, `docs/game-design.md` |
 | Git, Docker, CI/CD y despliegue | historial de commits, Dockerfiles, `docker-compose*.yml`, `ci.yml`, `docs/deployment.md` |
-| Instalación, ejecución y demostración | `docs/installation.md`, `docs/demo-guide.md` |
+| Instalación, ejecución y demostración | `docs/installation.md` |
 | Imperativo vs funcional | `docs/architecture.md`, sección 6 |
 
 Las limitaciones conocidas y el trabajo futuro están en

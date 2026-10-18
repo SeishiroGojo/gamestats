@@ -10,7 +10,7 @@ import (
 )
 
 // Estos tests recorren los archivos de ejemplo de la carpeta data/ y
-// comprueban que Validate() se comporta como documenta docs/demo-guide.md:
+// comprueban que Validate() se comporta como documenta docs/api.md:
 // los escenarios válidos se aceptan completos y el de eventos inválidos se
 // rechaza completo. Así, si alguien edita un JSON de prueba y lo rompe, el
 // CI lo detecta.
