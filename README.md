@@ -1,3 +1,13 @@
+Integrantes:
+
+Kendall Andrade
+
+Emerson Ramirez
+
+
+Link del repositorio: https://github.com/SeishiroGojo/gamestats.git
+
+
 # GameStats
 
 ![CI](https://github.com/SeishiroGojo/gamestats/actions/workflows/ci.yml/badge.svg)
