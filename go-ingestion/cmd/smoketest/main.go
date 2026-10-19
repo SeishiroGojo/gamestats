@@ -2,7 +2,6 @@
 //
 // Con los dos servicios levantados (docker compose up), envía los escenarios
 // de la carpeta data/ al módulo Go y comprueba, consultando al módulo Scala,
-// que los resultados son los esperados (ver docs/demo-guide.md):
 //
 //	go run ./cmd/smoketest                      # servicios en localhost
 //	go run ./cmd/smoketest -data ../data        # carpeta de escenarios
