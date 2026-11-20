@@ -30,6 +30,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/events", eventsHandler(manager))
 	mux.HandleFunc("/health", healthHandler(manager))
+	mux.HandleFunc("/stats/live", liveHandler(manager))
 
 	log.Printf("GameStats ingestion escuchando en :%s (Scala en %s)", port, scalaURL)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
@@ -53,13 +54,19 @@ func eventsHandler(manager *match.Manager) http.HandlerFunc {
 		}
 
 		var rejected []string
+		duplicates, late := 0, 0
 		for _, e := range events {
 			if err := validate.Validate(e); err != nil {
 				log.Printf("evento rechazado (%s): %v", e.EventID, err)
 				rejected = append(rejected, e.EventID+": "+err.Error())
 				continue
 			}
-			manager.Dispatch(e)
+			switch manager.Dispatch(e) {
+			case match.Duplicate:
+				duplicates++
+			case match.Closed:
+				late++
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -69,8 +76,10 @@ func eventsHandler(manager *match.Manager) http.HandlerFunc {
 			w.WriteHeader(http.StatusAccepted)
 		}
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"accepted": len(events) - len(rejected),
-			"rejected": rejected,
+			"accepted":   len(events) - len(rejected),
+			"rejected":   rejected,
+			"duplicates": duplicates, // reenvíos ya recibidos (idempotencia por eventId)
+			"late":       late,       // eventos de partidas que ya terminaron
 		})
 	}
 }
@@ -103,6 +112,21 @@ func healthHandler(manager *match.Manager) http.HandlerFunc {
 			"status":        "ok",
 			"activeMatches": manager.ActiveMatches(),
 		})
+	}
+}
+
+// liveHandler expone los contadores en vivo por juego: partidas iniciadas,
+// en curso y terminadas, y eventos recibidos por tipo. Se actualiza con cada
+// evento, sin esperar a que las partidas terminen.
+func liveHandler(manager *match.Manager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		json.NewEncoder(w).Encode(manager.Live())
 	}
 }
 

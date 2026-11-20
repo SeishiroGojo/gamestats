@@ -1,7 +1,7 @@
 package gamestats
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
-import gamestats.analysis.{Rules, Statistics, Storage}
+import gamestats.analysis.{Aggregates, MatchSummaries, Rules, Statistics, Storage}
 import gamestats.model.MatchBatch
 import io.circe.generic.semiauto._
 import io.circe.parser.decode
@@ -21,6 +21,11 @@ import scala.util.{Failure, Success, Try}
   * resultado en SQLite, y permite consultarlo después con:
   *   - GET /results             -> lista de partidas analizadas
   *   - GET /results/{matchId}   -> resultado completo de una partida
+  *   - GET /stats/games         -> estadísticas agregadas por juego
+  *   - GET /stats/overall       -> estadísticas generales (todos los juegos)
+  *
+  * El juego de carreras ("racing-circuit") conserva su análisis específico.
+  * Cualquier otro juego recibe un resumen genérico (ver MatchSummaries).
   */
 object Main {
 
@@ -47,6 +52,7 @@ object Main {
     val server = HttpServer.create(new InetSocketAddress(port), 0)
     server.createContext("/analyze", analyzeHandler)
     server.createContext("/results", resultsHandler)
+    server.createContext("/stats", statsHandler)
     server.createContext("/health", healthHandler)
     server.setExecutor(null) // executor por defecto de un solo hilo; suficiente para la demo
     server.start()
@@ -62,6 +68,8 @@ object Main {
       decode[MatchBatch](body) match {
         case Left(error) =>
           respond(exchange, 400, s"""{"error":"JSON inválido: ${error.getMessage.replace("\"", "'")}"}""")
+        case Right(batch) if batch.events.exists(_.gameId != RacingGameId) =>
+          analyzeGenericGame(exchange, batch)
         case Right(batch) =>
           val stats     = Statistics.matchStats(batch.matchId, batch.events)
           val comebacks = Rules.detectComebacks(batch.events)
@@ -74,6 +82,49 @@ object Main {
           }
 
           respond(exchange, 200, resultJson)
+      }
+    }
+  }
+
+  private val RacingGameId = "racing-circuit"
+
+  /** Juegos distintos del de carreras: se calcula un resumen genérico de la
+    * partida, se guarda (tabla de resúmenes y tabla de resultados) y se
+    * devuelve como JSON.
+    */
+  private def analyzeGenericGame(exchange: HttpExchange, batch: MatchBatch): Unit =
+    MatchSummaries.summarize(batch.matchId, batch.events) match {
+      case None =>
+        respond(exchange, 422, """{"error":"la partida no tiene eventos"}""")
+      case Some(summary) =>
+        val json = summary.asJson.noSpaces
+        Try {
+          Storage.saveSummary(summary)
+          Storage.save(batch.matchId, json)
+        } match {
+          case Success(_) => ()
+          case Failure(e) => System.err.println(s"error guardando resumen de ${batch.matchId}: ${e.getMessage}")
+        }
+        respond(exchange, 200, json)
+    }
+
+  /** GET /stats/games y GET /stats/overall: agregados calculados con
+    * funciones puras (Aggregates) sobre los resúmenes guardados.
+    */
+  private val statsHandler: HttpHandler = (exchange: HttpExchange) => {
+    if (exchange.getRequestMethod != "GET") {
+      respond(exchange, 405, """{"error":"método no permitido"}""")
+    } else {
+      val path = exchange.getRequestURI.getPath
+      Try(Storage.listSummaries()) match {
+        case Failure(e) =>
+          respond(exchange, 500, s"""{"error":"error consultando estadísticas: ${e.getMessage}"}""")
+        case Success(summaries) =>
+          path match {
+            case "/stats/games"   => respond(exchange, 200, Aggregates.byGame(summaries).asJson.noSpaces)
+            case "/stats/overall" => respond(exchange, 200, Aggregates.overall(summaries).asJson.noSpaces)
+            case _                => respond(exchange, 404, """{"error":"use /stats/games o /stats/overall"}""")
+          }
       }
     }
   }

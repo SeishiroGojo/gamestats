@@ -33,8 +33,87 @@ object Storage {
             |  created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
             |)""".stripMargin
         )
+        stmt.execute(
+          """CREATE TABLE IF NOT EXISTS match_summaries (
+            |  match_id     TEXT PRIMARY KEY,
+            |  game_id      TEXT NOT NULL,
+            |  mode         TEXT NOT NULL,
+            |  outcome      TEXT NOT NULL,
+            |  winner       TEXT,
+            |  players      TEXT NOT NULL,
+            |  duration_ms  INTEGER NOT NULL,
+            |  moves        INTEGER NOT NULL,
+            |  ai_decisions INTEGER NOT NULL,
+            |  score        INTEGER,
+            |  created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            |)""".stripMargin
+        )
       } finally stmt.close()
     }
+  }
+
+  /** Guarda (o reemplaza) el resumen de una partida de un juego genérico
+    * (todos menos el de carreras), para poder agregar estadísticas por juego.
+    */
+  def saveSummary(s: MatchSummaries.MatchSummary): Unit = withConnection { conn =>
+    val ps = conn.prepareStatement(
+      """INSERT INTO match_summaries
+        |  (match_id, game_id, mode, outcome, winner, players, duration_ms, moves, ai_decisions, score, created_at)
+        |VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now','localtime'))
+        |ON CONFLICT(match_id) DO UPDATE SET
+        |  game_id = excluded.game_id, mode = excluded.mode, outcome = excluded.outcome,
+        |  winner = excluded.winner, players = excluded.players, duration_ms = excluded.duration_ms,
+        |  moves = excluded.moves, ai_decisions = excluded.ai_decisions, score = excluded.score,
+        |  created_at = excluded.created_at
+        |""".stripMargin
+    )
+    try {
+      ps.setString(1, s.matchId)
+      ps.setString(2, s.gameId)
+      ps.setString(3, s.mode)
+      ps.setString(4, s.outcome)
+      ps.setString(5, s.winner.orNull)
+      ps.setString(6, s.players.mkString(","))
+      ps.setLong(7, s.durationMs)
+      ps.setInt(8, s.moves)
+      ps.setInt(9, s.aiDecisions)
+      s.score match {
+        case Some(v) => ps.setLong(10, v)
+        case None    => ps.setNull(10, java.sql.Types.INTEGER)
+      }
+      ps.executeUpdate()
+    } finally ps.close()
+  }
+
+  /** Todos los resúmenes guardados (de todos los juegos genéricos). */
+  def listSummaries(): List[MatchSummaries.MatchSummary] = withConnection { conn =>
+    val stmt = conn.createStatement()
+    try {
+      val rs = stmt.executeQuery(
+        "SELECT match_id, game_id, mode, outcome, winner, players, duration_ms, moves, ai_decisions, score FROM match_summaries"
+      )
+      try {
+        val buf = scala.collection.mutable.ListBuffer.empty[MatchSummaries.MatchSummary]
+        while (rs.next()) {
+          val score = rs.getLong("score")
+          val scoreOpt = if (rs.wasNull()) None else Some(score)
+          val playersRaw = rs.getString("players")
+          buf += MatchSummaries.MatchSummary(
+            matchId = rs.getString("match_id"),
+            gameId = rs.getString("game_id"),
+            mode = rs.getString("mode"),
+            outcome = rs.getString("outcome"),
+            winner = Option(rs.getString("winner")),
+            players = if (playersRaw == null || playersRaw.isEmpty) Nil else playersRaw.split(",").toList,
+            durationMs = rs.getLong("duration_ms"),
+            moves = rs.getInt("moves"),
+            aiDecisions = rs.getInt("ai_decisions"),
+            score = scoreOpt
+          )
+        }
+        buf.toList
+      } finally rs.close()
+    } finally stmt.close()
   }
 
   /** Guarda (o reemplaza, si ya existía) el resultado de una partida. */

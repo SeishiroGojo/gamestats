@@ -148,3 +148,43 @@ func TestHealthIndicaPartidasActivas(t *testing.T) {
 		t.Errorf("respuesta de /health inesperada: %v", cuerpo)
 	}
 }
+
+func TestStatsLiveExponeContadoresPorJuego(t *testing.T) {
+	scala := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"ok":true}`))
+	}))
+	t.Cleanup(scala.Close)
+	manager := match.NewManager(client.NewScalaClient(scala.URL))
+	events := eventsHandler(manager)
+	live := liveHandler(manager)
+
+	cuerpo := `[{"eventId":"a1","timestamp":"2026-11-01T10:00:00Z","gameId":"connect4","gameVersion":"1.0","matchId":"m1","type":"MATCH_STARTED"},
+	            {"eventId":"a1","timestamp":"2026-11-01T10:00:00Z","gameId":"connect4","gameVersion":"1.0","matchId":"m1","type":"MATCH_STARTED"}]`
+	rec, resp := publicar(t, events, cuerpo)
+	if rec.Code != http.StatusAccepted || resp.Accepted != 2 {
+		t.Fatalf("respuesta inesperada: %d %+v", rec.Code, resp)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/stats/live", nil)
+	out := httptest.NewRecorder()
+	live.ServeHTTP(out, req)
+	var snap struct {
+		Totals struct{ Started, Active int }
+		Games  []struct {
+			GameID  string
+			Started int
+		}
+	}
+	if err := json.Unmarshal(out.Body.Bytes(), &snap); err != nil {
+		t.Fatalf("JSON inválido: %v (%s)", err, out.Body.String())
+	}
+	if snap.Totals.Started != 1 || snap.Totals.Active != 1 || len(snap.Games) != 1 || snap.Games[0].GameID != "connect4" {
+		t.Errorf("contadores inesperados: %s", out.Body.String())
+	}
+
+	post := httptest.NewRecorder()
+	live.ServeHTTP(post, httptest.NewRequest(http.MethodPost, "/stats/live", nil))
+	if post.Code != http.StatusMethodNotAllowed {
+		t.Errorf("POST /stats/live debía dar 405, dio %d", post.Code)
+	}
+}
