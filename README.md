@@ -303,6 +303,7 @@ gamestats/
 | [`docs/ci-cd.md`](docs/ci-cd.md) | Pipeline de CI/CD |
 | [`docs/deployment.md`](docs/deployment.md) | Despliegue con las imágenes publicadas |
 | [`docs/demo-guide.md`](docs/demo-guide.md) | Guion de la demostración |
+| [`docs/gameconsole-integration.md`](docs/gameconsole-integration.md) | Cambios y endpoints nuevos que usa GameConsole (proyecto 2) |
 
 ---
 
@@ -322,6 +323,12 @@ gamestats/
 | Imperativo frente a funcional | [`docs/architecture.md`](docs/architecture.md), sección 6 |
 
 Las limitaciones conocidas y el trabajo futuro están en [`docs/architecture.md`](docs/architecture.md), sección 7.
+
+## Integración con GameConsole
+
+Este proyecto es la base de estadísticas de [GameConsole](https://github.com/SeishiroGojo/gameconsole) (proyecto 2). Para ese uso se agregaron la idempotencia por `eventId`, los contadores en vivo (`GET /stats/live`) y las estadísticas por juego y generales (`GET /stats/games`, `GET /stats/overall`). El detalle está en [`docs/gameconsole-integration.md`](docs/gameconsole-integration.md).
+
+**Nota sobre el CI:** la última ejecución del pipeline no pudo correr porque GitHub bloqueó la cuenta por un problema de facturación ([ejecución](https://github.com/SeishiroGojo/gamestats/actions/runs/44696631589)). Las ejecuciones anteriores terminaron en verde y las pruebas se ejecutaron de forma local.
 
 ---
 
